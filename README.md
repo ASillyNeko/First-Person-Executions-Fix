@@ -1,5 +1,5 @@
-# BT
+# First Person Executions Fix
 
-Type fastball in console to use fastball
+Fixes Crashes
 
 This is a server side mod
