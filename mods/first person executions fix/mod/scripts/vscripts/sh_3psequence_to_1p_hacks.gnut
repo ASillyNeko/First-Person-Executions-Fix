@@ -87,6 +87,7 @@ if( player.IsPlayer() )
 	ownerProxy.SetModel( player.GetModelName() )
 	ownerProxy.SetValueForModelKey( player.GetModelName() )
 	ownerProxy.SetInvulnerable()
+        ownerProxy.EnableNPCFlag( NPC_IGNORE_ALL )
         NPC_NoTarget( ownerProxy )
 	ownerProxy.SetSkin( player.GetSkin() )
 	ownerProxy.SetCamo( player.GetCamo() )
@@ -120,6 +121,7 @@ if( player.IsPlayer() )
 	thirdPersonProxy.SetModel( player.GetModelName() )
 	thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
 	thirdPersonProxy.SetInvulnerable()
+        thirdPersonProxy.EnableNPCFlag( NPC_IGNORE_ALL )
         NPC_NoTarget( thirdPersonProxy )
         SetTeam( thirdPersonProxy, player.GetTeam() )
 	thirdPersonProxy.SetSkin( player.GetSkin() )
@@ -131,7 +133,13 @@ if( player.IsPlayer() )
 		Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_titan" )
 	else
 		Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_player" )
-	
+
+        if ( player.IsTitan() )
+        {
+	DisableTitanRodeo( thirdPersonProxy )
+        DisableTitanRodeo( ownerProxy )
+        }
+
 	thread FirstPersonSequence( sequence, thirdPersonProxy, other )
 	
 	// create the viewpoint entity
