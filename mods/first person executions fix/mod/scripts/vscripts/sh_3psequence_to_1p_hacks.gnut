@@ -70,13 +70,17 @@ if( player.IsPlayer() )
 	// eyeangles are fine though
 	vector angles = player.GetAngles()
 	angles.y = player.EyeAngles().y
+    int maxyaw = 360
 	// create the first proxy entity, this should visually be identical to the player, but only visible to them, and with head/torso hidden
 	// this is an npc because some firstpersonsequences use animation features that only work on npcs and pilots, not props, so need to do this
 	entity ownerProxy = CreateEntity( entityclass ) //CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
 	ownerProxy.SetModel( player.GetModelName() )
-	ownerProxy.SetValueForModelKey( player.GetModelName() )
+	//ownerProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	ownerProxy.SetOrigin( player.GetOrigin() )
+	if( Distance( angles, angles ) < maxyaw ) // Crashes server if yaw is over 360
+	{
 	ownerProxy.SetAngles( angles )
+	}
 	ownerProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
 	ownerProxy.kv.solid = 0 // nonsolid
 	SetTeam( ownerProxy, player.GetTeam() )
@@ -85,7 +89,7 @@ if( player.IsPlayer() )
 	ownerProxy.SetCamo( player.GetCamo() )
 	DispatchSpawn( ownerProxy )
 	ownerProxy.SetModel( player.GetModelName() )
-	ownerProxy.SetValueForModelKey( player.GetModelName() )
+	//ownerProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	ownerProxy.SetInvulnerable()
         ownerProxy.EnableNPCFlag( NPC_IGNORE_ALL )
         NPC_NoTarget( ownerProxy )
@@ -108,9 +112,12 @@ if( player.IsPlayer() )
 	// create the second proxy entity, this visible to everyone else
 	entity thirdPersonProxy = CreateEntity( entityclass ) //CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
 	thirdPersonProxy.SetModel( player.GetModelName() )
-	thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
+	//thirdPersonProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	thirdPersonProxy.SetOrigin( player.GetOrigin() )
+	if( Distance( angles, angles ) < maxyaw ) // Crashes server if yaw is over 360
+	{
 	thirdPersonProxy.SetAngles( angles )
+	}
 	thirdPersonProxy.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE & ~ENTITY_VISIBLE_TO_OWNER
 	thirdPersonProxy.kv.solid = 0 // nonsolid
 	SetTeam( thirdPersonProxy, player.GetTeam() )
@@ -119,7 +126,7 @@ if( player.IsPlayer() )
 	thirdPersonProxy.SetCamo( player.GetCamo() )
 	DispatchSpawn( thirdPersonProxy	)
 	thirdPersonProxy.SetModel( player.GetModelName() )
-	thirdPersonProxy.SetValueForModelKey( player.GetModelName() )
+	//thirdPersonProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	thirdPersonProxy.SetInvulnerable()
         thirdPersonProxy.EnableNPCFlag( NPC_IGNORE_ALL )
         NPC_NoTarget( thirdPersonProxy )
@@ -197,10 +204,10 @@ void function ServerCallback_HideHudForFPHackAnim()
 {
 	// these functions just set hud positions to infront of/behind the camera, manually set them up here so they'll be far enough away so we don't see them in these anims
 	// in an ideal world we wouldn't even have to turn off this rui stuff because it would be parented to our camera but unfortunately we do not live in an ideal world
-	//thread MainHud_TurnOff_RUI( true )
-	//HidePermanentCockpitRui()
-	RuiTopology_UpdatePos( clGlobal.topoCockpitHud, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
-	RuiTopology_UpdatePos( clGlobal.topoCockpitHudPermanent, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
+	thread MainHud_TurnOff_RUI( true )
+	HidePermanentCockpitRui()
+	//RuiTopology_UpdatePos( clGlobal.topoCockpitHud, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
+	//RuiTopology_UpdatePos( clGlobal.topoCockpitHudPermanent, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
 		
 	thread EnableHudOnViewRestored()
 }
