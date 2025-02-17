@@ -175,36 +175,11 @@ if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 
 if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 0 ) == 1 ) )
 	{
 	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
-	string hiddenBodygroup = FORCE1P_PILOT_1P_HIDDEN_BODYGROUP
-	string entityclass = FORCE1P_PILOT_ENTITYCLASS
 
 	if ( player.IsTitan() )
 	{
 		attachment = FORCE1P_TITAN_1P_ATTACHMENT
-		hiddenBodygroup = FORCE1P_TITAN_1P_HIDDEN_BODYGROUP	
-		entityclass	= FORCE1P_TITAN_ENTITYCLASS
 	}
-	    entity ownerProxy = CreateEntity( entityclass ) // I know that it says it disables the proxy
-		ownerProxy.SetModel( player.GetModelName() )
-		ownerProxy.kv.solid = 0
-		ownerProxy.kv.VisibilityFlags = ~ENTITY_VISIBLE_TO_EVERYONE
-	    DispatchSpawn( ownerProxy )
-		ownerProxy.SetInvulnerable()
-		NPC_NoTarget( ownerProxy )
-		ownerProxy.SetModel( player.GetModelName() )
-		entity thirdPersonProxy = CreateEntity( entityclass )
-		thirdPersonProxy.SetModel( player.GetModelName() )
-	    thirdPersonProxy.kv.solid = 0
-		thirdPersonProxy.kv.VisibilityFlags = ~ENTITY_VISIBLE_TO_EVERYONE
-	    DispatchSpawn( thirdPersonProxy	)
-		thirdPersonProxy.SetInvulnerable()
-		NPC_NoTarget( thirdPersonProxy )
-		thirdPersonProxy.SetModel( player.GetModelName() )
-	    if ( player.IsTitan() )
-        {
-	    DisableTitanRodeo( thirdPersonProxy )
-        DisableTitanRodeo( ownerProxy )
-        }
 		entity camera = CreateEntity( "point_viewcontrol" )
 		camera.SetParent( player, attachment )
 	if( !player.IsTitan() )
@@ -242,12 +217,10 @@ if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 
 		DispatchSpawn( camera )
 		player.SetViewEntity( camera, true )
 		cleanupData.camera = camera
-		cleanupData.ownerProxy = ownerProxy
-		cleanupData.thirdPersonProxy = thirdPersonProxy
 		cleanupData.player = player
 		if ( player.IsPlayer() ) // Check if the victim is an NPC
 		Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
-		thread CleanupForced1PSequenceAfterAnimDoneNoProxy( sequence, ownerProxy, other, cleanupData )
+		thread CleanupForced1PSequenceAfterAnimDoneNoProxy( sequence, cleanupData )
 	}
 return cleanupData
 }
@@ -268,22 +241,11 @@ void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct se
 	FirstPersonSequence( sequence, player, other )
 }
 
-void function CleanupForced1PSequenceAfterAnimDoneNoProxy( FirstPersonSequenceStruct sequence, entity player, entity other, Forced1PSequenceData cleanupData )
+void function CleanupForced1PSequenceAfterAnimDoneNoProxy( FirstPersonSequenceStruct sequence, Forced1PSequenceData cleanupData )
 {
-    //player.EndSignal( "OnDeath" ) We are gonna kill ownerProxy and thirdPersonProxy
-	//player.EndSignal( "OnDestroy" )
-	//player.EndSignal( "OnAnimationDone" )
-    cleanupData.player.EndSignal( "OnDeath" ) // Use cleanupData.player so it stops when player dies
-	cleanupData.player.EndSignal( "OnDestroy" )
-	cleanupData.player.EndSignal( "OnAnimationDone" )
-	OnThreadEnd( function() : ( cleanupData )
-	{
-		if ( IsValid( cleanupData.player ) && ( cleanupData.camera ) && cleanupData.player.IsPlayer() )
-			CleanupForced1PSequenceNoProxy( cleanupData )
-	})
-	cleanupData.ownerProxy.Destroy()
-	cleanupData.thirdPersonProxy.Destroy()
-	FirstPersonSequenceNoProxy( sequence, player, other )
+	WaittillAnimDone( cleanupData.player )
+	if ( IsValid( cleanupData.player ) && ( cleanupData.camera ) && cleanupData.player.IsPlayer() )
+	CleanupForced1PSequenceNoProxy( cleanupData )
 }
 
 void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
