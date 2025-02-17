@@ -36,6 +36,7 @@ void function FirstPersonSequenceForce1P_Init()
 void function FirstPersonSequenceForce1P_InitPlaylistVars()
 {
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "fp_embark_enabled", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 }
 
 void function FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions()
@@ -47,7 +48,7 @@ void function FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions()
 Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStruct sequence, entity player, entity other = null )
 {
 Forced1PSequenceData cleanupData
-if( player.IsPlayer() )
+if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 0 ) == 0 ) )
 {
 	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
 	string hiddenBodygroup = FORCE1P_PILOT_1P_HIDDEN_BODYGROUP
@@ -91,8 +92,9 @@ if( player.IsPlayer() )
 	ownerProxy.SetModel( player.GetModelName() )
 	//ownerProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	ownerProxy.SetInvulnerable()
-        ownerProxy.EnableNPCFlag( NPC_IGNORE_ALL )
-        NPC_NoTarget( ownerProxy )
+    ownerProxy.EnableNPCFlag( NPC_IGNORE_ALL )
+    NPC_NoTarget( ownerProxy )
+	SetTeam( ownerProxy, player.GetTeam() )
 	ownerProxy.SetSkin( player.GetSkin() )
 	ownerProxy.SetCamo( player.GetCamo() )
 	HideName( ownerProxy )
@@ -128,9 +130,9 @@ if( player.IsPlayer() )
 	thirdPersonProxy.SetModel( player.GetModelName() )
 	//thirdPersonProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	thirdPersonProxy.SetInvulnerable()
-        thirdPersonProxy.EnableNPCFlag( NPC_IGNORE_ALL )
-        NPC_NoTarget( thirdPersonProxy )
-        SetTeam( thirdPersonProxy, player.GetTeam() )
+    thirdPersonProxy.EnableNPCFlag( NPC_IGNORE_ALL )
+    NPC_NoTarget( thirdPersonProxy )
+    SetTeam( thirdPersonProxy, player.GetTeam() )
 	thirdPersonProxy.SetSkin( player.GetSkin() )
 	thirdPersonProxy.SetCamo( player.GetCamo() )
 	HideName( thirdPersonProxy )
@@ -170,16 +172,84 @@ if( player.IsPlayer() )
 	// play this anim now, so we can cleanup after it's done
 	thread CleanupForced1PSequenceAfterAnimDone( sequence, ownerProxy, other, cleanupData )
 }
+if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 0 ) == 1 ) )
+	{
+	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
+	string hiddenBodygroup = FORCE1P_PILOT_1P_HIDDEN_BODYGROUP
+	string entityclass = FORCE1P_PILOT_ENTITYCLASS
+
+	if ( player.IsTitan() )
+	{
+		attachment = FORCE1P_TITAN_1P_ATTACHMENT
+		hiddenBodygroup = FORCE1P_TITAN_1P_HIDDEN_BODYGROUP	
+		entityclass	= FORCE1P_TITAN_ENTITYCLASS
+	}
+	    entity ownerProxy = CreateEntity( entityclass ) // I know that it says it disables the proxy
+		ownerProxy.SetModel( player.GetModelName() )
+		ownerProxy.kv.VisibilityFlags = ~ENTITY_VISIBLE_TO_EVERYONE
+	    DispatchSpawn( ownerProxy )
+		ownerProxy.SetOrigin( <25000, 25000, 25000> )
+		ownerProxy.SetModel( player.GetModelName() )
+		entity thirdPersonProxy = CreateEntity( entityclass )
+		thirdPersonProxy.SetModel( player.GetModelName() )
+		thirdPersonProxy.kv.VisibilityFlags = ~ENTITY_VISIBLE_TO_EVERYONE
+	    DispatchSpawn( thirdPersonProxy	)
+		thirdPersonProxy.SetOrigin( <25000, 25000, 25000> )
+		thirdPersonProxy.SetModel( player.GetModelName() )
+		entity camera = CreateEntity( "point_viewcontrol" )
+		camera.SetParent( player, attachment )
+	if( !player.IsTitan() )
+	camera.SetOrigin( <6, 0, 0> )
+	if( player.IsTitan() )
+	{
+	entity soul = player.GetTitanSoul()
+	string attackerType = GetTitanCharacterName( player )
+	switch ( attackerType )
+	    {
+		case "ronin":
+		                camera.SetOrigin( <50, 0, 20> )
+                        break;
+		case "scorch":
+                        camera.SetOrigin( <65, 0, -15> )
+                        break;
+		case "legion":
+		                camera.SetOrigin( <65, 0, -15> )
+			            break;
+		case "ion":
+		                camera.SetOrigin( <52, 0, -22> )
+                        break;
+		case "tone":
+		                camera.SetOrigin( <52, 0, -22> )
+                        break;
+		case "vanguard":
+		                camera.SetOrigin( <52, 0, -22> )
+                        break;
+        case "northstar":
+		                camera.SetOrigin( <50, 0, 20> )
+			            break;
+	    }
+		}
+		camera.kv.spawnflags = 56
+		DispatchSpawn( camera )
+		player.SetViewEntity( camera, true )
+		cleanupData.camera = camera
+		cleanupData.ownerProxy = ownerProxy
+		cleanupData.thirdPersonProxy = thirdPersonProxy
+		cleanupData.player = player
+		if ( player.IsPlayer() ) // Check if the victim is an NPC
+		Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
+		thread CleanupForced1PSequenceAfterAnimDone( sequence, ownerProxy, other, cleanupData )
+	}
 return cleanupData
 }
 
 void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct sequence, entity player, entity other, Forced1PSequenceData cleanupData )
 {
-        player.EndSignal( "OnDeath" )
+    player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
-        cleanupData.player.EndSignal( "OnDeath" ) // Use cleanupData.player so it stops when player dies
-	cleanupData.player.EndSignal( "OnDestroy" )
 	player.EndSignal( "OnAnimationDone" )
+    cleanupData.player.EndSignal( "OnDeath" ) // Use cleanupData.player so it stops when player dies
+	cleanupData.player.EndSignal( "OnDestroy" )
 	OnThreadEnd( function() : ( cleanupData )
 	{
 		if ( IsValid( cleanupData.player ) && ( cleanupData.camera ) && cleanupData.player.IsPlayer() )
