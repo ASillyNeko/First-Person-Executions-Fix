@@ -259,7 +259,6 @@ void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
 
 void function CleanupForced1PSequenceNoProxy( Forced1PSequenceData cleanupData )
 {
-	cleanupData.player.Show()
 	cleanupData.player.ClearViewEntity()
 	cleanupData.camera.Destroy()
 }
@@ -270,8 +269,9 @@ void function ServerCallback_HideHudForFPHackAnim()
 {
 	// these functions just set hud positions to infront of/behind the camera, manually set them up here so they'll be far enough away so we don't see them in these anims
 	// in an ideal world we wouldn't even have to turn off this rui stuff because it would be parented to our camera but unfortunately we do not live in an ideal world
-	thread MainHud_TurnOff_RUI( true )
-	HidePermanentCockpitRui()
+    GetLocalClientPlayer().ClientCommand( "rui_drawEnable 0" ) // This Does Disable The Rui
+	//thread MainHud_TurnOff_RUI( true )
+	//HidePermanentCockpitRui()
 	//RuiTopology_UpdatePos( clGlobal.topoCockpitHud, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
 	//RuiTopology_UpdatePos( clGlobal.topoCockpitHudPermanent, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
 		
@@ -282,8 +282,8 @@ void function EnableHudOnViewRestored()
 {
 	while ( GetViewEntity() != GetLocalClientPlayer() )
 		WaitFrame()
-	
-	thread MainHud_TurnOn_RUI( true )
-	ShowPermanentCockpitRui()
+	GetLocalClientPlayer().ClientCommand( "rui_drawEnable 1" )
+	//thread MainHud_TurnOn_RUI( true )
+	//ShowPermanentCockpitRui()
 }
 #endif
