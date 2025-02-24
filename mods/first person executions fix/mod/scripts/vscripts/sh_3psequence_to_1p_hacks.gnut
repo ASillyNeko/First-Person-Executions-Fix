@@ -48,6 +48,13 @@ void function FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions()
 Forced1PSequenceData function FirstPersonSequenceForce1P( FirstPersonSequenceStruct sequence, entity player, entity other = null )
 {
 Forced1PSequenceData cleanupData
+/*
+Here For Development Purposes And To See What Model The Player Was Using If The Server Crashes Because Of The Model
+*/
+if ( player.IsPlayer() ) // NPC's Can't Use GetPlayerName() Function
+printt("[FirstPersonExecution] " + player.GetPlayerName() + "'s Model " + ( player.GetModelName() ))
+if ( player.IsNPC() ) // Here Because NPC's Can't Use GetPlayerName() Function
+printt("[FirstPersonExecution] NPC's Model " + ( player.GetModelName() ))
 if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 0 ) == 0 ) )
 {
 	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
@@ -160,6 +167,10 @@ if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 
 		DispatchSpawn( camera )
 		player.SetViewEntity( camera, true )
 		cleanupData.camera = camera
+		if( player.GetModelName() == $"models/titans/buddy/titan_buddy.mdl" )
+		camera.SetOrigin( <52, 0, -22> )
+		if( player.GetModelName() == $"models/robots/spectre/imc_spectre.mdl" )
+		camera.SetOrigin( <3, 0, 0> )
 	}
 
 	// note for potential thing that could be done
@@ -269,7 +280,9 @@ void function ServerCallback_HideHudForFPHackAnim()
 {
 	// these functions just set hud positions to infront of/behind the camera, manually set them up here so they'll be far enough away so we don't see them in these anims
 	// in an ideal world we wouldn't even have to turn off this rui stuff because it would be parented to our camera but unfortunately we do not live in an ideal world
-    GetLocalClientPlayer().ClientCommand( "rui_drawEnable 0" ) // This Does Disable The Rui
+	// These Two Disable Rui
+    //GetLocalClientPlayer().ClientCommand( "rui_drawEnable 0" )
+    GetLocalClientPlayer().ClientCommand( "thirdpersonshoulder" )
 	//thread MainHud_TurnOff_RUI( true )
 	//HidePermanentCockpitRui()
 	//RuiTopology_UpdatePos( clGlobal.topoCockpitHud, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
@@ -282,7 +295,8 @@ void function EnableHudOnViewRestored()
 {
 	while ( GetViewEntity() != GetLocalClientPlayer() )
 		WaitFrame()
-	GetLocalClientPlayer().ClientCommand( "rui_drawEnable 1" )
+	//GetLocalClientPlayer().ClientCommand( "rui_drawEnable 1" )
+    GetLocalClientPlayer().ClientCommand( "thirdpersonshoulder" )
 	//thread MainHud_TurnOn_RUI( true )
 	//ShowPermanentCockpitRui()
 }
