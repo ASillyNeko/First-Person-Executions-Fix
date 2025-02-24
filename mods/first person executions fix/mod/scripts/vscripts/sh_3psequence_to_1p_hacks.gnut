@@ -280,23 +280,21 @@ void function ServerCallback_HideHudForFPHackAnim()
 {
 	// these functions just set hud positions to infront of/behind the camera, manually set them up here so they'll be far enough away so we don't see them in these anims
 	// in an ideal world we wouldn't even have to turn off this rui stuff because it would be parented to our camera but unfortunately we do not live in an ideal world
-	// These Two Disable Rui
-    //GetLocalClientPlayer().ClientCommand( "rui_drawEnable 0" )
-    GetLocalClientPlayer().ClientCommand( "thirdpersonshoulder" )
+	int ruiDrawIsEnabled = GetConVarInt( "rui_drawEnable" )
+    GetLocalClientPlayer().ClientCommand( "rui_drawEnable 0" )
 	//thread MainHud_TurnOff_RUI( true )
 	//HidePermanentCockpitRui()
 	//RuiTopology_UpdatePos( clGlobal.topoCockpitHud, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
 	//RuiTopology_UpdatePos( clGlobal.topoCockpitHudPermanent, < -1000, -1000, -1000 >, < -1000, -1000, -1000 >, < -1000, -1000, -1000 > )
 		
-	thread EnableHudOnViewRestored()
+	thread EnableHudOnViewRestored( ruiDrawIsEnabled )
 }
 
-void function EnableHudOnViewRestored()
+void function EnableHudOnViewRestored( int ruiDrawIsEnabled )
 {
 	while ( GetViewEntity() != GetLocalClientPlayer() )
 		WaitFrame()
-	//GetLocalClientPlayer().ClientCommand( "rui_drawEnable 1" )
-    GetLocalClientPlayer().ClientCommand( "thirdpersonshoulder" )
+    GetLocalClientPlayer().ClientCommand( "rui_drawEnable " + ruiDrawIsEnabled )
 	//thread MainHud_TurnOn_RUI( true )
 	//ShowPermanentCockpitRui()
 }
