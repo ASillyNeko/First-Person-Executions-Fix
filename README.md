@@ -16,4 +16,10 @@ Fixes Server Crashing If Yaw Is Over 360
 
 Fixes Rui Not Being Disabled
 
-You Can Also Use `fp_embark_disable_proxy 1` To Disable OwnerProxy/ThirdPersonProxy So Some Animations Don't Look Buggy
+`fp_embark_disable_proxy` Disables All Proxies
+
+`fp_embark_disable_embark_proxy` Disables Embark Proxies
+
+`fp_embark_disable_titan_proxy` Disables Titan Proxies
+
+`fp_embark_disable_pilot_proxy` Disables Pilot Proxies

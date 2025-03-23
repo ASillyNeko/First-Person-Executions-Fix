@@ -37,6 +37,9 @@ void function FirstPersonSequenceForce1P_InitPlaylistVars()
 {
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "fp_embark_enabled", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_embark_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_titan_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
+	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_pilot_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 }
 
 void function FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions()
@@ -55,7 +58,27 @@ if ( player.IsPlayer() ) // NPC's Can't Use GetPlayerName() Function
 printt("[FirstPersonExecution] " + player.GetPlayerName() + "'s Model " + ( player.GetModelName() ))
 if ( player.IsNPC() ) // Here Because NPC's Can't Use GetPlayerName() Function
 printt("[FirstPersonExecution] NPC's Model " + ( player.GetModelName() ))
-if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 0 ) == 0 ) )
+if( player.IsPlayer() && IsPlayerEmbarking( player ) && ( GetCurrentPlaylistVarInt( "fp_embark_disable_embark_proxy", 0 ) == 1 ) )
+{
+thread DisableProxy( sequence, player, other )
+return cleanupData
+}
+if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 0 ) == 1 ) )
+{
+thread DisableProxy( sequence, player, other )
+return cleanupData
+}
+if( player.IsPlayer() && player.IsTitan() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_titan_proxy", 0 ) == 1 ) )
+{
+thread DisableProxy( sequence, player, other )
+return cleanupData
+}
+if( player.IsPlayer() && !player.IsTitan() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_pilot_proxy", 0 ) == 1 ) )
+{
+thread DisableProxy( sequence, player, other )
+return cleanupData
+}
+if( player.IsPlayer() )
 {
 	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
 	string hiddenBodygroup = FORCE1P_PILOT_1P_HIDDEN_BODYGROUP
@@ -69,8 +92,8 @@ if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 
 	}
 			
 	// hide player from everyone, unlike VisibilityFlags, this won't hide children, which is way easier to deal with
-        player.Hide()
-	
+    player.Hide()
+
 	Forced1PSequenceData cleanupData
 	cleanupData.player = player
 	
@@ -144,7 +167,6 @@ if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 
 	thirdPersonProxy.SetCamo( player.GetCamo() )
 	HideName( thirdPersonProxy )
 	cleanupData.thirdPersonProxy = thirdPersonProxy
-	
 	if ( player.IsTitan() )
 		Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_titan" )
 	else
@@ -152,7 +174,7 @@ if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 
 
         if ( player.IsTitan() )
         {
-	DisableTitanRodeo( thirdPersonProxy )
+	    DisableTitanRodeo( thirdPersonProxy )
         DisableTitanRodeo( ownerProxy )
         }
 
@@ -183,8 +205,12 @@ if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 
 	// play this anim now, so we can cleanup after it's done
 	thread CleanupForced1PSequenceAfterAnimDone( sequence, ownerProxy, other, cleanupData )
 }
-if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 0 ) == 1 ) )
-	{
+return cleanupData
+}
+
+Forced1PSequenceData function DisableProxy( FirstPersonSequenceStruct sequence, entity player, entity other = null )
+{
+Forced1PSequenceData cleanupData
 	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
 
 	if ( player.IsTitan() )
@@ -232,7 +258,6 @@ if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 
 		if ( player.IsPlayer() ) // Check if the victim is an NPC
 		Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
 		thread CleanupForced1PSequenceAfterAnimDoneNoProxy( sequence, cleanupData )
-	}
 return cleanupData
 }
 
