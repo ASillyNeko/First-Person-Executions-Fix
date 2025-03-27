@@ -1,7 +1,7 @@
 {
 	"Name" : "Nekos First Person Executions Fix",
 	"Description" : "Fixes First Person Embark/Executions",
-	"Version": "1.0.9",
+	"Version": "1.1.0",
 	"LoadPriority": 20,
 	"RequiredOnClient": false
 }

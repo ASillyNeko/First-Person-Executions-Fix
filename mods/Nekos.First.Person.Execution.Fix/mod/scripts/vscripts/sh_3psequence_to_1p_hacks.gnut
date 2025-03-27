@@ -127,6 +127,12 @@ if( player.IsPlayer() )
 	SetTeam( ownerProxy, player.GetTeam() )
 	ownerProxy.SetSkin( player.GetSkin() )
 	ownerProxy.SetCamo( player.GetCamo() )
+	if( player.IsTitan() )
+    {
+	entity ownerProxysoul = ownerProxy.GetTitanSoul()
+	if( IsValid( ownerProxysoul ) )
+	ownerProxysoul.SetShieldHealth( ownerProxysoul.GetShieldHealthMax() )
+	}
 	HideName( ownerProxy )
 	cleanupData.ownerProxy = ownerProxy
 
@@ -165,6 +171,12 @@ if( player.IsPlayer() )
     SetTeam( thirdPersonProxy, player.GetTeam() )
 	thirdPersonProxy.SetSkin( player.GetSkin() )
 	thirdPersonProxy.SetCamo( player.GetCamo() )
+	if( player.IsTitan() )
+    {
+	entity thirdPersonProxysoul = ownerProxy.GetTitanSoul()
+	if( IsValid( thirdPersonProxysoul ) )
+	thirdPersonProxysoul.SetShieldHealth( thirdPersonProxysoul.GetShieldHealthMax() )
+	}
 	HideName( thirdPersonProxy )
 	cleanupData.thirdPersonProxy = thirdPersonProxy
 	if ( player.IsTitan() )
