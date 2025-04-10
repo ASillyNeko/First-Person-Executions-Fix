@@ -18,6 +18,8 @@ Fixes Rui Not Being Disabled
 
 Fixes First Person Execution Not Stopping When Execution Is Interrupted
 
+Fixes Battery Being In The Wrong Position On Proxies
+
 Put Decals On Proxies
 
 Proxies Mean OwnerProxy And ThirdPersonProxy
