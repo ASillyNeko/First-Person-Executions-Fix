@@ -16,6 +16,8 @@ Fixes Server Crashing If Yaw Is Over 360
 
 Fixes Rui Not Being Disabled
 
+Fixes First Person Execution Not Stopping When Execution Is Interrupted
+
 Put Decals On Proxies
 
 Proxies Mean OwnerProxy And ThirdPersonProxy

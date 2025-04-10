@@ -104,9 +104,17 @@ if( player.IsPlayer() )
     int maxyaw = 360
 	// create the first proxy entity, this should visually be identical to the player, but only visible to them, and with head/torso hidden
 	// this is an npc because some firstpersonsequences use animation features that only work on npcs and pilots, not props, so need to do this
-	entity ownerProxy = CreateEntity( entityclass ) //CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
+	entity ownerProxy
+	if( entityclass != "npc_titan" )
+	ownerProxy = CreateEntity( entityclass )
+	if( entityclass == "npc_titan" )
+	{
+	ownerProxy = CreateNPCTitan( player.GetPlayerSettings(), player.GetTeam(), < 0, 0, 0 >, < 0, 0, 0 > )
+	}
+   if( IsValid( ownerProxy ) )
+   {
+    if( entityclass != "npc_titan" )
 	ownerProxy.SetModel( player.GetModelName() )
-	//ownerProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	ownerProxy.SetOrigin( player.GetOrigin() )
 	if( Distance( angles, angles ) < maxyaw ) // Crashes server if yaw is over 360
 	{
@@ -120,8 +128,8 @@ if( player.IsPlayer() )
 	ownerProxy.SetCamo( player.GetCamo() )
 	ownerProxy.SetDecal( player.GetDecal() )
 	DispatchSpawn( ownerProxy )
+    if( entityclass != "npc_titan" )
 	ownerProxy.SetModel( player.GetModelName() )
-	//ownerProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	ownerProxy.SetInvulnerable()
     ownerProxy.EnableNPCFlag( NPC_IGNORE_ALL )
     NPC_NoTarget( ownerProxy )
@@ -136,7 +144,6 @@ if( player.IsPlayer() )
 	ownerProxysoul.SetShieldHealth( ownerProxysoul.GetShieldHealthMax() )
 	}
 	HideName( ownerProxy )
-	cleanupData.ownerProxy = ownerProxy
 
 	int bodygroupValue = 1
 	if ( hiddenBodygroup == "torso" )
@@ -147,12 +154,22 @@ if( player.IsPlayer() )
         {
 	ownerProxy.SetBodygroup( ownerProxy.FindBodyGroup( hiddenBodygroup ), bodygroupValue )
         }
+   }
 	// don't play anim until later so we can do cleanup stuff
+	cleanupData.ownerProxy = ownerProxy
 		
 	// create the second proxy entity, this visible to everyone else
-	entity thirdPersonProxy = CreateEntity( entityclass ) //CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles() )
+	entity thirdPersonProxy
+	if( entityclass != "npc_titan" )
+	thirdPersonProxy = CreateEntity( entityclass )
+	if( entityclass == "npc_titan" )
+	{
+	thirdPersonProxy = CreateNPCTitan( player.GetPlayerSettings(), player.GetTeam(), < 0, 0, 0 >, < 0, 0, 0 > )
+	}
+   if( IsValid( thirdPersonProxy ) )
+   {
+    if( entityclass != "npc_titan" )
 	thirdPersonProxy.SetModel( player.GetModelName() )
-	//thirdPersonProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	thirdPersonProxy.SetOrigin( player.GetOrigin() )
 	if( Distance( angles, angles ) < maxyaw ) // Crashes server if yaw is over 360
 	{
@@ -166,8 +183,8 @@ if( player.IsPlayer() )
 	thirdPersonProxy.SetCamo( player.GetCamo() )
 	thirdPersonProxy.SetDecal( player.GetDecal() )
 	DispatchSpawn( thirdPersonProxy	)
+	if( entityclass != "npc_titan" )
 	thirdPersonProxy.SetModel( player.GetModelName() )
-	//thirdPersonProxy.SetValueForModelKey( player.GetModelName() ) Disabled because I heard that it crashes the server
 	thirdPersonProxy.SetInvulnerable()
     thirdPersonProxy.EnableNPCFlag( NPC_IGNORE_ALL )
     NPC_NoTarget( thirdPersonProxy )
@@ -182,7 +199,6 @@ if( player.IsPlayer() )
 	thirdPersonProxysoul.SetShieldHealth( thirdPersonProxysoul.GetShieldHealthMax() )
 	}
 	HideName( thirdPersonProxy )
-	cleanupData.thirdPersonProxy = thirdPersonProxy
 	if ( player.IsTitan() )
 		Highlight_SetEnemyHighlight( thirdPersonProxy, "enemy_titan" )
 	else
@@ -195,11 +211,14 @@ if( player.IsPlayer() )
         }
 
 	thread FirstPersonSequence( sequence, thirdPersonProxy, other )
+   }
+   cleanupData.thirdPersonProxy = thirdPersonProxy
 	
 	// create the viewpoint entity
 	if ( player.IsPlayer() ) // Check if the victim is an NPC
 	{
 		entity camera = CreateEntity( "point_viewcontrol" )
+		if( IsValid( ownerProxy ) )
 		camera.SetParent( ownerProxy, attachment )
 		camera.kv.spawnflags = 56
 		DispatchSpawn( camera )
@@ -279,15 +298,18 @@ return cleanupData
 
 void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct sequence, entity player, entity other, Forced1PSequenceData cleanupData )
 {
+    if( !IsValid( player ) )
+	return
     player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 	player.EndSignal( "OnAnimationDone" )
+	player.EndSignal( "OnAnimationInterrupted" )
     cleanupData.player.EndSignal( "OnDeath" ) // Use cleanupData.player so it stops when player dies
 	cleanupData.player.EndSignal( "OnDestroy" )
 	cleanupData.player.EndSignal( "OnAnimationDone" )
+	cleanupData.player.EndSignal( "OnAnimationInterrupted" )
 	OnThreadEnd( function() : ( cleanupData )
 	{
-		if ( IsValid( cleanupData.player ) && ( cleanupData.camera ) && cleanupData.player.IsPlayer() )
 			CleanupForced1PSequence( cleanupData )
 	})
 	FirstPersonSequence( sequence, player, other )
@@ -296,22 +318,29 @@ void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct se
 void function CleanupForced1PSequenceAfterAnimDoneNoProxy( FirstPersonSequenceStruct sequence, Forced1PSequenceData cleanupData )
 {
 	WaittillAnimDone( cleanupData.player )
-	if ( IsValid( cleanupData.player ) && ( cleanupData.camera ) && cleanupData.player.IsPlayer() )
 	CleanupForced1PSequenceNoProxy( cleanupData )
 }
 
 void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
 {
+    if( IsValid( cleanupData.player ) )
+	{
 	cleanupData.player.Show()
 	cleanupData.player.ClearViewEntity()
+	}
+	if( IsValid( cleanupData.camera ) )
 	cleanupData.camera.Destroy()
+	if( IsValid( cleanupData.ownerProxy ) )
 	cleanupData.ownerProxy.Destroy()
+	if( IsValid( cleanupData.thirdPersonProxy ) )
 	cleanupData.thirdPersonProxy.Destroy()
 }
 
 void function CleanupForced1PSequenceNoProxy( Forced1PSequenceData cleanupData )
 {
+    if( IsValid( cleanupData.player ) )
 	cleanupData.player.ClearViewEntity()
+	if( IsValid( cleanupData.camera ) )
 	cleanupData.camera.Destroy()
 }
 #endif
