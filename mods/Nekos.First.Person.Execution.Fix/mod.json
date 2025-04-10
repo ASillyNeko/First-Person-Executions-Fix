@@ -1,7 +1,10 @@
 {
-	"Name" : "Nekos First Person Executions Fix",
-	"Description" : "Fixes First Person Embark/Executions",
-	"Version": "1.1.0",
+	"Name": "Nekos First Person Executions Fix",
+	"Description": "Fixes First Person Embark/Executions",
+	"Version": "1.1.1",
 	"LoadPriority": 20,
-	"RequiredOnClient": false
+	"RequiredOnClient": false,
+	"Dependencies": {
+		"FIRST_PERSON_EXECUTION_HAS_NEW_HUD_REVAMP": "HUD Revamp v2"
+	}
 }

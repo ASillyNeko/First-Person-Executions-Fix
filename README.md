@@ -16,6 +16,10 @@ Fixes Server Crashing If Yaw Is Over 360
 
 Fixes Rui Not Being Disabled
 
+Put Decals On Proxies
+
+Proxies Mean OwnerProxy And ThirdPersonProxy
+
 `fp_embark_disable_proxy` Disables All Proxies
 
 `fp_embark_disable_embark_proxy` Disables Embark Proxies
