@@ -12,22 +12,18 @@ Stops Spectres From Crashing The Server When Executed
 
 Fixes Camo/Skin Not Being Used On Model
 
-Fixes Server Crashing If Yaw Is Over 360
+Fixes Server Crashing If Yaw Is Over 359
 
 Fixes Rui Not Being Disabled
 
 Fixes First Person Execution Not Stopping When Execution Is Interrupted
 
-Fixes Battery Being In The Wrong Position On Proxies
+Fixes Battery Being In The Wrong Position On OwnerProxy/ThirdPersonProxy
 
-Put Decals On Proxies
+Fixes OwnerProxy/ThirdPersonProxy Being In Wrong Spot In Executions
 
-Proxies Mean OwnerProxy And ThirdPersonProxy
+Fixes ThirdPersonProxy Bodygroups Never Being Set To Players
 
-`fp_embark_disable_proxy` Disables All Proxies
+Fixes First Person Executions Ending Too Soon
 
-`fp_embark_disable_embark_proxy` Disables Embark Proxies
-
-`fp_embark_disable_titan_proxy` Disables Titan Proxies
-
-`fp_embark_disable_pilot_proxy` Disables Pilot Proxies
+Put Decals On OwnerProxy/ThirdPersonProxy
