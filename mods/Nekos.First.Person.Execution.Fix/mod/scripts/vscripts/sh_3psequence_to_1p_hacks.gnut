@@ -36,10 +36,6 @@ void function FirstPersonSequenceForce1P_Init()
 void function FirstPersonSequenceForce1P_InitPlaylistVars()
 {
 	AddPrivateMatchModeSettingEnum( "#MODE_SETTING_CATEGORY_RIFF", "fp_embark_enabled", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_embark_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_titan_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
-	AddPrivateMatchModeSettingEnum( "#First_Person_Fixes", "fp_embark_disable_pilot_proxy", [ "#SETTING_DISABLED", "#SETTING_ENABLED" ], "0" )
 }
 
 void function FirstPersonSequenceForce1P_RegisterCustomNetworkFunctions()
@@ -54,30 +50,10 @@ Forced1PSequenceData cleanupData
 /*
 Here For Development Purposes And To See What Model The Player Was Using If The Server Crashes Because Of The Model
 */
-if ( player.IsPlayer() ) // NPC's Can't Use GetPlayerName() Function
-printt("[FirstPersonExecution] " + player.GetPlayerName() + "'s Model " + ( player.GetModelName() ))
-if ( player.IsNPC() ) // Here Because NPC's Can't Use GetPlayerName() Function
-printt("[FirstPersonExecution] NPC's Model " + ( player.GetModelName() ))
-if( player.IsPlayer() && IsPlayerEmbarking( player ) && ( GetCurrentPlaylistVarInt( "fp_embark_disable_embark_proxy", 0 ) == 1 ) )
-{
-thread DisableProxy( sequence, player, other )
-return cleanupData
-}
-if( player.IsPlayer() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_proxy", 0 ) == 1 ) )
-{
-thread DisableProxy( sequence, player, other )
-return cleanupData
-}
-if( player.IsPlayer() && player.IsTitan() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_titan_proxy", 0 ) == 1 ) )
-{
-thread DisableProxy( sequence, player, other )
-return cleanupData
-}
-if( player.IsPlayer() && !player.IsTitan() && ( GetCurrentPlaylistVarInt( "fp_embark_disable_pilot_proxy", 0 ) == 1 ) )
-{
-thread DisableProxy( sequence, player, other )
-return cleanupData
-}
+if ( player.IsPlayer() )
+printt("[FirstPersonExecution] " + player.GetPlayerName() + "'s Model " + player.GetModelName() )
+if ( player.IsNPC() )
+printt("[FirstPersonExecution] " + player.GetTitle() + "'s Model " + player.GetModelName() )
 if( player.IsPlayer() )
 {
 	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
@@ -113,7 +89,7 @@ if( player.IsPlayer() )
 	}
    if( IsValid( ownerProxy ) )
    {
-    if( entityclass != "npc_titan" )
+    if( ownerProxy.GetModelName() != player.GetModelName() )
 	ownerProxy.SetModel( player.GetModelName() )
 	ownerProxy.SetOrigin( player.GetOrigin() )
 	if( Distance( angles, angles ) < maxyaw ) // Crashes server if yaw is over 360
@@ -128,7 +104,7 @@ if( player.IsPlayer() )
 	ownerProxy.SetCamo( player.GetCamo() )
 	ownerProxy.SetDecal( player.GetDecal() )
 	DispatchSpawn( ownerProxy )
-    if( entityclass != "npc_titan" )
+    if( ownerProxy.GetModelName() != player.GetModelName() )
 	ownerProxy.SetModel( player.GetModelName() )
 	ownerProxy.SetInvulnerable()
     ownerProxy.EnableNPCFlag( NPC_IGNORE_ALL )
@@ -150,10 +126,8 @@ if( player.IsPlayer() )
 		bodygroupValue = 2
 	
 	// hide annoying bodygroup
-        if( player.GetModelName() != $"models/robots/spectre/imc_spectre.mdl" && player.GetModelName() != $"models/titans/buddy/titan_buddy.mdl")
-        {
+    if( player.GetModelName() != $"models/robots/spectre/imc_spectre.mdl" && player.GetModelName() != $"models/titans/buddy/titan_buddy.mdl")
 	ownerProxy.SetBodygroup( ownerProxy.FindBodyGroup( hiddenBodygroup ), bodygroupValue )
-        }
    }
 	// don't play anim until later so we can do cleanup stuff
 	cleanupData.ownerProxy = ownerProxy
@@ -168,7 +142,7 @@ if( player.IsPlayer() )
 	}
    if( IsValid( thirdPersonProxy ) )
    {
-    if( entityclass != "npc_titan" )
+    if( thirdPersonProxy.GetModelName() != player.GetModelName() )
 	thirdPersonProxy.SetModel( player.GetModelName() )
 	thirdPersonProxy.SetOrigin( player.GetOrigin() )
 	if( Distance( angles, angles ) < maxyaw ) // Crashes server if yaw is over 360
@@ -183,7 +157,7 @@ if( player.IsPlayer() )
 	thirdPersonProxy.SetCamo( player.GetCamo() )
 	thirdPersonProxy.SetDecal( player.GetDecal() )
 	DispatchSpawn( thirdPersonProxy	)
-	if( entityclass != "npc_titan" )
+	if( thirdPersonProxy.GetModelName() != player.GetModelName() )
 	thirdPersonProxy.SetModel( player.GetModelName() )
 	thirdPersonProxy.SetInvulnerable()
     thirdPersonProxy.EnableNPCFlag( NPC_IGNORE_ALL )
@@ -209,8 +183,8 @@ if( player.IsPlayer() )
 	    DisableTitanRodeo( thirdPersonProxy )
         DisableTitanRodeo( ownerProxy )
         }
-
-	thread FirstPersonSequence( sequence, thirdPersonProxy, other )
+    thread SetBodyGroups( player, thirdPersonProxy )
+	FirstPersonPlayAnim( sequence, thirdPersonProxy, player, other )
    }
    cleanupData.thirdPersonProxy = thirdPersonProxy
 	
@@ -243,82 +217,24 @@ if( player.IsPlayer() )
 return cleanupData
 }
 
-Forced1PSequenceData function DisableProxy( FirstPersonSequenceStruct sequence, entity player, entity other = null )
-{
-Forced1PSequenceData cleanupData
-	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
-
-	if ( player.IsTitan() )
-	{
-		attachment = FORCE1P_TITAN_1P_ATTACHMENT
-	}
-		entity camera = CreateEntity( "point_viewcontrol" )
-		camera.SetParent( player, attachment )
-	if( !player.IsTitan() )
-	camera.SetOrigin( <6, 0, 0> )
-	if( player.IsTitan() )
-	{
-	entity soul = player.GetTitanSoul()
-	string attackerType = GetTitanCharacterName( player )
-	switch ( attackerType )
-	    {
-		case "ronin":
-		                camera.SetOrigin( <50, 0, 20> )
-                        break;
-		case "scorch":
-                        camera.SetOrigin( <65, 0, -15> )
-                        break;
-		case "legion":
-		                camera.SetOrigin( <65, 0, -15> )
-			            break;
-		case "ion":
-		                camera.SetOrigin( <52, 0, -22> )
-                        break;
-		case "tone":
-		                camera.SetOrigin( <52, 0, -22> )
-                        break;
-		case "vanguard":
-		                camera.SetOrigin( <52, 0, -22> )
-                        break;
-        case "northstar":
-		                camera.SetOrigin( <50, 0, 20> )
-			            break;
-	    }
-		}
-		camera.kv.spawnflags = 56
-		DispatchSpawn( camera )
-		player.SetViewEntity( camera, true )
-		cleanupData.camera = camera
-		cleanupData.player = player
-		if ( player.IsPlayer() ) // Check if the victim is an NPC
-		Remote_CallFunction_NonReplay( player, "ServerCallback_HideHudForFPHackAnim" )
-		thread CleanupForced1PSequenceAfterAnimDoneNoProxy( sequence, cleanupData )
-return cleanupData
-}
-
 void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct sequence, entity player, entity other, Forced1PSequenceData cleanupData )
 {
     if( !IsValid( player ) )
 	return
     player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "OnAnimationDone" )
 	player.EndSignal( "OnAnimationInterrupted" )
-    cleanupData.player.EndSignal( "OnDeath" ) // Use cleanupData.player so it stops when player dies
+    cleanupData.player.EndSignal( "OnDeath" )
 	cleanupData.player.EndSignal( "OnDestroy" )
-	cleanupData.player.EndSignal( "OnAnimationDone" )
 	cleanupData.player.EndSignal( "OnAnimationInterrupted" )
 	OnThreadEnd( function() : ( cleanupData )
 	{
 			CleanupForced1PSequence( cleanupData )
 	})
-	FirstPersonSequence( sequence, player, other )
-}
-
-void function CleanupForced1PSequenceAfterAnimDoneNoProxy( FirstPersonSequenceStruct sequence, Forced1PSequenceData cleanupData )
-{
-	WaittillAnimDone( cleanupData.player )
-	CleanupForced1PSequenceNoProxy( cleanupData )
+	FirstPersonPlayAnim( sequence, player, cleanupData.player, other )
+	WaitFrame()
+	while( player.Anim_IsActive() )
+	WaitFrame()
 }
 
 void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
@@ -327,6 +243,7 @@ void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
 	{
 	cleanupData.player.Show()
 	cleanupData.player.ClearViewEntity()
+	ClearPlayerAnimViewEntity( cleanupData.player )
 	}
 	if( IsValid( cleanupData.camera ) )
 	cleanupData.camera.Destroy()
@@ -336,12 +253,36 @@ void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
 	cleanupData.thirdPersonProxy.Destroy()
 }
 
-void function CleanupForced1PSequenceNoProxy( Forced1PSequenceData cleanupData )
+void function SetBodyGroups( entity player, entity proxy )
 {
-    if( IsValid( cleanupData.player ) )
-	cleanupData.player.ClearViewEntity()
-	if( IsValid( cleanupData.camera ) )
-	cleanupData.camera.Destroy()
+player.EndSignal( "OnDestroy" )
+proxy.EndSignal( "OnDestroy" )
+player.EndSignal( "OnDeath" )
+proxy.EndSignal( "OnDeath" )
+ while( true )
+ {
+  proxy.SetFullBodygroup( player.GetFullBodygroup() )
+  WaitFrame()
+ }
+}
+
+void function FirstPersonPlayAnim( FirstPersonSequenceStruct sequence, entity proxy, entity player, entity other )
+{
+ bool saveednoparent = sequence.noParent
+ string savedattachment = sequence.attachment
+ bool saveduseanimatedrefattachment = sequence.useAnimatedRefAttachment
+ if( !IsPlayerEmbarking( player ) ) // Player Embarks Need To Have The Parent Be The Titan
+ {
+ sequence.noParent = false
+ sequence.attachment = "REF"
+ sequence.useAnimatedRefAttachment = true
+ thread FirstPersonSequence( sequence, proxy, player )
+ }
+ else
+ thread FirstPersonSequence( sequence, proxy, other )
+ sequence.noParent = saveednoparent
+ sequence.attachment = savedattachment
+ sequence.useAnimatedRefAttachment = saveduseanimatedrefattachment
 }
 #endif
 
@@ -350,17 +291,17 @@ void function ServerCallback_HideHudForFPHackAnim()
 {
 	// these functions just set hud positions to infront of/behind the camera, manually set them up here so they'll be far enough away so we don't see them in these anims
 	// in an ideal world we wouldn't even have to turn off this rui stuff because it would be parented to our camera but unfortunately we do not live in an ideal world
-	#if !FIRST_PERSON_EXECUTION_HAS_NEW_HUD_REVAMP
 	int ruiDrawIsEnabled = GetConVarInt( "rui_drawEnable" )
-    GetLocalClientPlayer().ClientCommand( "rui_drawEnable 0" )		
+	if( ruiDrawIsEnabled == 0 )
+	return
+    SetConVarInt( "rui_drawEnable", 0 )	
 	thread EnableHudOnViewRestored( ruiDrawIsEnabled )
-	#endif
 }
 
-void function EnableHudOnViewRestored( int ruiDrawIsEnabled = 0 )
+void function EnableHudOnViewRestored( int ruiDrawIsEnabled = 1 )
 {
 	while ( GetViewEntity() != GetLocalClientPlayer() )
 		WaitFrame()
-    GetLocalClientPlayer().ClientCommand( "rui_drawEnable " + ruiDrawIsEnabled )
+	SetConVarInt( "rui_drawEnable", ruiDrawIsEnabled )
 }
 #endif
