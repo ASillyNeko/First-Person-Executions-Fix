@@ -1,7 +1,17 @@
 {
 	"Name": "Neko's First Person Executions Fix",
 	"Description": "Fixes First Person Embark/Executions",
-	"Version": "1.1.2",
+	"Version": "1.1.3",
 	"LoadPriority": 9,
-	"RequiredOnClient": false
+	"RequiredOnClient": false,
+	"ConVars": [
+		{
+			"Name": "fp_executions_disabled_uids",
+			"DefaultValue": ""
+		},
+		{
+			"Name": "fp_executions_disable_enabled",
+			"DefaultValue": "1"
+		}
+	]
 }

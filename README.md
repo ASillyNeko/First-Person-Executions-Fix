@@ -1,5 +1,11 @@
 # First Person Executions Fix
 
+Convars
+
+`fp_executions_disabled_uids` Disabled FP Execution UIDs
+
+`fp_executions_disable_enabled` Enables Disabled FP Execution UIDs
+
 Stops Players From Rodeoing OwnerProxy/ThirdPersonProxy
 
 Stops OwnerProxy/ThirdPersonProxy From Looking Around In Execution
