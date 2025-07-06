@@ -58,8 +58,7 @@ if ( player.IsPlayer() )
     print("[FirstPersonExecution] " + player.GetPlayerName() + "'s Model " + player.GetModelName() )
 if ( player.IsNPC() )
     print("[FirstPersonExecution] " + player.GetTitle() + "'s Model " + player.GetModelName() )
-array<string> disableduids = split( GetConVarString( "fp_executions_disabled_uids" ), "," )
-if ( !player.IsPlayer() || (disableduids.contains( player.GetUID() ) && GetConVarInt( "fp_executions_disable_enabled" )) )
+if ( !player.IsPlayer() || (split( GetConVarString( "fp_executions_disabled_uids" ), "," ).contains( player.GetUID() ) && GetConVarInt( "fp_executions_disable_enabled" )) )
     return cleanupData
 
 	string attachment = FORCE1P_PILOT_1P_ATTACHMENT
@@ -308,20 +307,33 @@ ClServer_MessageStruct function ChatCallback( ClServer_MessageStruct message )
 		
 		if ( command == "?turnonfpexecutions" )
 		{
-			disableduids = StringReplace( disableduids, ",,", "" )
+			message.shouldBlock = true
+            if ( !split( GetConVarString( "fp_executions_disabled_uids" ), "," ).contains( message.player.GetUID() ) )
+			{
+			    Chat_ServerPrivateMessage( message.player, "[38;2;0;140;245m[FP Executions][111m " + "FP Executions Are Already Enabled", false, false )
+				return message
+			}
 			if ( disableduids == "" )
 			    return message
-			disableduids = StringReplace( disableduids, message.player.GetUID(), "" )
-			Chat_ServerPrivateMessage( message.player, "[38;2;0;140;245m[FP Executions][111m " + "Enabled First Person Executions", false, false )
+			if ( disableduids != message.player.GetUID() )
+			    disableduids = StringReplace( disableduids, "," + message.player.GetUID(), "" )
+			else
+			    disableduids = ""
+			Chat_ServerPrivateMessage( message.player, "[38;2;0;140;245m[FP Executions][111m " + "Enabled FP Executions", false, false )
 		}
 		else if ( command == "?turnofffpexecutions" )
 		{
-			disableduids = StringReplace( disableduids, ",,", "" )
+			message.shouldBlock = true
+            if ( split( GetConVarString( "fp_executions_disabled_uids" ), "," ).contains( message.player.GetUID() ) )
+			{
+			    Chat_ServerPrivateMessage( message.player, "[38;2;0;140;245m[FP Executions][111m " + "FP Executions Are Already Disabled", false, false )
+				return message
+			}
 			if ( disableduids == "" )
 			    disableduids = message.player.GetUID()
 			else
 			    disableduids += "," + message.player.GetUID()
-			Chat_ServerPrivateMessage( message.player, "[38;2;0;140;245m[FP Executions][111m " + "Disabled First Person Executions", false, false )
+			Chat_ServerPrivateMessage( message.player, "[38;2;0;140;245m[FP Executions][111m " + "Disabled FP Executions", false, false )
 		}
 		if ( disableduids != GetConVarString( "fp_executions_disabled_uids" ) )
 		    SetConVarString( "fp_executions_disabled_uids", disableduids )
