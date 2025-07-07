@@ -6,6 +6,12 @@ Convars
 
 `fp_executions_disable_enabled` Enables Disabled FP Execution UIDs
 
+Commands
+
+`?enablefpexecutions` Removes The Command Senders UID From Disabled UIDs
+
+`?disablefpexecutions` Adds The Command Senders UID To Disabled UIDs
+
 Stops Players From Rodeoing OwnerProxy/ThirdPersonProxy
 
 Stops OwnerProxy/ThirdPersonProxy From Looking Around In Execution

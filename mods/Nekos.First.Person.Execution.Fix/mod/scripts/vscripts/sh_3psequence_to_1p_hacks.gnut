@@ -289,8 +289,8 @@ void function OnClientConnected( entity player )
 	    return
 
 	Chat_ServerPrivateMessage( player, "[38;2;0;140;245m[FP Executions][111m " + "This Server Uses FP Executions", false, false )
-	Chat_ServerPrivateMessage( player, "[38;2;0;140;245m[FP Executions][111m " + "To Enable FP Executions Use ?turnonfpexecutions", false, false )
-	Chat_ServerPrivateMessage( player, "[38;2;0;140;245m[FP Executions][111m " + "To Disable FP Executions Use ?turnofffpexecutions", false, false )
+	Chat_ServerPrivateMessage( player, "[38;2;0;140;245m[FP Executions][111m " + "To Enable FP Executions Use ?enablefpexecutions", false, false )
+	Chat_ServerPrivateMessage( player, "[38;2;0;140;245m[FP Executions][111m " + "To Disable FP Executions Use ?disablefpexecutions", false, false )
 }
 
 ClServer_MessageStruct function ChatCallback( ClServer_MessageStruct message ) 
@@ -302,10 +302,10 @@ ClServer_MessageStruct function ChatCallback( ClServer_MessageStruct message )
 	if ( format("%c", msg[0]) == "?" ) 
 	{
 		array<string> msgParts = split(msg, " ")
-		string command = msgParts[0]
+		string command = msgParts[0].tolower()
 		string disableduids = GetConVarString( "fp_executions_disabled_uids" )
 		
-		if ( command == "?turnonfpexecutions" )
+		if ( command == "?enablefpexecutions" )
 		{
 			message.shouldBlock = true
             if ( !split( GetConVarString( "fp_executions_disabled_uids" ), "," ).contains( message.player.GetUID() ) )
@@ -321,7 +321,7 @@ ClServer_MessageStruct function ChatCallback( ClServer_MessageStruct message )
 			    disableduids = ""
 			Chat_ServerPrivateMessage( message.player, "[38;2;0;140;245m[FP Executions][111m " + "Enabled FP Executions", false, false )
 		}
-		else if ( command == "?turnofffpexecutions" )
+		else if ( command == "?disablefpexecutions" )
 		{
 			message.shouldBlock = true
             if ( split( GetConVarString( "fp_executions_disabled_uids" ), "," ).contains( message.player.GetUID() ) )
