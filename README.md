@@ -1,5 +1,7 @@
 # First Person Executions Fix
 
+[Discord Server](https://ds.asillyneko.dev)
+
 Convars
 
 `fp_executions_disabled_uids` Disabled FP Execution UIDs
@@ -41,6 +43,8 @@ Fixes ThirdPersonProxy Bodygroups Never Being Set To Players
 Fixes First Person Executions Ending Too Soon
 
 Fixes Decals Not Being Put On OwnerProxy/ThirdPersonProxy
+
+Fixes Tether Traps Parenting To OwnerProxy/ThirdPersonProxy When Getting Destroyed
 
 Fixes Inner Pieces Execution Not Phase Shifting
 
