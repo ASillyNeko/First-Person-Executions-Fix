@@ -1,7 +1,7 @@
 {
 	"Name": "Neko's First Person Executions Fix",
 	"Description": "Fixes First Person Embark/Executions",
-	"Version": "1.1.5",
+	"Version": "1.1.6",
 	"LoadPriority": 20,
 	"RequiredOnClient": false,
 	"ConVars": [
@@ -14,4 +14,5 @@
 			"DefaultValue": "1"
 		}
 	]
+
 }
