@@ -12,6 +12,8 @@ Commands
 
 `?disablefpexecutions` Adds The Command Senders UID To Disabled UIDs
 
+Fixes
+
 Stops Players From Rodeoing OwnerProxy/ThirdPersonProxy
 
 Stops OwnerProxy/ThirdPersonProxy From Looking Around In Execution
@@ -38,4 +40,8 @@ Fixes ThirdPersonProxy Bodygroups Never Being Set To Players
 
 Fixes First Person Executions Ending Too Soon
 
-Put Decals On OwnerProxy/ThirdPersonProxy
+Fixes Decals Not Being Put On OwnerProxy/ThirdPersonProxy
+
+Fixes Inner Pieces Execution Not Phase Shifting
+
+Fixes Now You See Me Execution Not Cloaking
