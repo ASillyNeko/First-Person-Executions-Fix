@@ -242,14 +242,6 @@ void function CleanupForced1PSequenceAfterAnimDone( FirstPersonSequenceStruct se
 
 void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
 {
-	if ( IsValid( cleanupData.ownerProxy ) )
-		SetTeam( cleanupData.ownerProxy, 1 )
-
-	if ( IsValid( cleanupData.thirdPersonProxy ) )
-		SetTeam( cleanupData.thirdPersonProxy, 1 )
-
-	WaitFrame() // Prevent tether traps parenting to proxies when they get destroyed
-
     if ( IsValid( cleanupData.player ) )
 	{
 	    cleanupData.player.Show()
@@ -261,10 +253,30 @@ void function CleanupForced1PSequence( Forced1PSequenceData cleanupData )
 	    cleanupData.camera.Destroy()
 
 	if ( IsValid( cleanupData.ownerProxy ) )
-	    cleanupData.ownerProxy.Destroy()
+	{
+		cleanupData.ownerProxy.ClearBossPlayer()
+		SetTeam( cleanupData.ownerProxy, 1 )
+	}
 
 	if ( IsValid( cleanupData.thirdPersonProxy ) )
+	{
+		cleanupData.thirdPersonProxy.ClearBossPlayer()
+		SetTeam( cleanupData.thirdPersonProxy, 1 )
+	}
+
+	WaitFrame() // Prevent tether traps parenting to proxies when they get destroyed
+
+	if ( IsValid( cleanupData.ownerProxy ) )
+	{
+		cleanupData.ownerProxy.TakeDamage( 1, cleanupData.ownerProxy, cleanupData.ownerProxy, {} )
+	    cleanupData.ownerProxy.Destroy()
+	}
+
+	if ( IsValid( cleanupData.thirdPersonProxy ) )
+	{
+		cleanupData.thirdPersonProxy.TakeDamage( 1, cleanupData.thirdPersonProxy, cleanupData.thirdPersonProxy, {} )
 	    cleanupData.thirdPersonProxy.Destroy()
+	}
 }
 
 void function SetBodyGroups( entity player, entity proxy )
